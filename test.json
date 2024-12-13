@@ -9,6 +9,5 @@
         "b": "^(+ a x)",
         "c": "Nested computation"
     },
-    "array": [1, 2, 3, 4, "^(+ x y)"],
-    "log": "^(print Result is calculated)"
+    "array": [1, 2, 3, 4, "^(+ x y)"]
 }
