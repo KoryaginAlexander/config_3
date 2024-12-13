@@ -2,41 +2,72 @@ import argparse
 import json
 import re
 
-def json_to_custom_config(json_obj):
-    """Converts JSON object to custom configuration language format."""
-    def format_value(value):
-        if isinstance(value, str):
-            return f'@"{value}"'
-        elif isinstance(value, (int, float)):
-            return str(value)
-        elif isinstance(value, list):
-            return "{ " + ", ".join(format_value(v) for v in value) + " }"
-        else:
-            raise ValueError(f"Unsupported value type: {type(value)}")
+def evaluate_expression(expression, variables):
+    if not expression.startswith("^"):
+        raise ValueError("Invalid expression format. Must start with '^'.")
+    tokens = re.findall(r'[^\s\(\)]+', expression[1:])
+    if len(tokens) < 2:
+        raise ValueError("Invalid expression format. Must contain operator and arguments.")
+    operator = tokens[0]
+    operands = tokens[1:]
+    def get_value(token):
+        if token in variables:
+            return variables[token]
+        try:
+            return int(token)
+        except ValueError:
+            raise ValueError(f"Unknown variable or invalid operand: {token}")
+    values = list(map(get_value, operands))
+    if operator == "+":
+        return sum(values)
+    elif operator == "-":
+        if len(values) != 2:
+            raise ValueError("Subtraction requires exactly two operands.")
+        return values[0] - values[1]
+    elif operator == "print":
+        print(*values)
+        return None
+    else:
+        raise ValueError(f"Unsupported operator: {operator}")
 
+def format_value(value, variables):
+    if isinstance(value, str):
+        if value.startswith("^"):
+            return str(evaluate_expression(value, variables))
+        return f'@"{value}"'
+    elif isinstance(value, (int, float)):
+        return str(value)
+    elif isinstance(value, list):
+        return "{ " + ", ".join(format_value(v, variables) for v in value) + " }"
+    else:
+        raise ValueError(f"Unsupported value type: {type(value)}")
+
+def json_to_custom_config(json_obj, variables=None):
+    if variables is None:
+        variables = {}
     def process_key_value(key, value):
-        return f"let {key} = {format_value(value)};"
-
+        if isinstance(value, str) and value.startswith("^"):
+            computed_value = evaluate_expression(value, variables)
+            variables[key] = computed_value
+            return f"let {key} = {computed_value};"
+        else:
+            variables[key] = value
+            return f"let {key} = {format_value(value, variables)};"
     result = []
     for key, value in json_obj.items():
         if isinstance(value, dict):
             result.append(f"--[[ Nested configuration for {key} ]]--")
-            nested = json_to_custom_config(value)
+            nested = json_to_custom_config(value, variables)
             result.append(nested)
         else:
             result.append(process_key_value(key, value))
     return "\n".join(result)
 
 def parse_json_file(input_file):
-    """Parses JSON from the input file."""
-    try:
-        with open(input_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Error parsing JSON file: {e}")
+    with open(input_file, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 def write_output_file(output_file, content):
-    """Writes the transformed content to the output file."""
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(content)
 
@@ -44,9 +75,7 @@ def main():
     parser = argparse.ArgumentParser(description="Transform JSON into a custom configuration language.")
     parser.add_argument("-i", "--input", required=True, help="Path to the input JSON file.")
     parser.add_argument("-o", "--output", required=True, help="Path to the output configuration file.")
-
     args = parser.parse_args()
-
     try:
         json_data = parse_json_file(args.input)
         config_data = json_to_custom_config(json_data)

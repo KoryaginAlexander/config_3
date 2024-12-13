@@ -1,10 +1,14 @@
 {
-    "server": {
-        "host": "localhost",
-        "port": 8080
+    "x": 5,
+    "y": 10,
+    "z": "^(+ x y)",
+    "w": "^(- 20 z)",
+    "message": "Result is calculated",
+    "nested": {
+        "a": 2,
+        "b": "^(+ a x)",
+        "c": "Nested computation"
     },
-    "features": {
-        "enabled": true,
-        "list": ["a", "b", "c"]
-    }
+    "array": [1, 2, 3, 4, "^(+ x y)"],
+    "log": "^(print Result is calculated)"
 }

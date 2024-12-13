@@ -1,6 +1,10 @@
---[[ Nested configuration for server ]]--
-let host = @"localhost";
-let port = 8080;
---[[ Nested configuration for features ]]--
-let enabled = True;
-let list = { @"a", @"b", @"c" };
+let x = 5;
+let y = 10;
+let z = 15;
+let w = 35;
+let message = @"Result is calculated";
+--[[ Nested configuration for nested ]]--
+let a = 2;
+let b = 7;
+let c = @"Nested computation";
+let array = { 1, 2, 3, 4, 15 };
