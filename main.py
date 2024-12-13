@@ -42,26 +42,32 @@ def format_value(value, variables):
     else:
         raise ValueError(f"Unsupported value type: {type(value)}")
 
-def json_to_custom_config(json_obj, variables=None):
+def json_to_custom_config(json_obj, variables=None, indent=0):
     if variables is None:
         variables = {}
-    def process_key_value(key, value):
+
+    def process_key_value(key, value, indent_level):
+        indent_str = " " * indent_level
         if isinstance(value, str) and value.startswith("^"):
             computed_value = evaluate_expression(value, variables)
             variables[key] = computed_value
-            return f"let {key} = {computed_value};"
+            return f"{indent_str}{key} = {computed_value};"
+        elif isinstance(value, dict):
+            return f"{indent_str}{key} = {{\n{{{json_to_custom_config(value, variables, indent_level + 4)}}}\n{indent_str}}};"
+        elif isinstance(value, list):
+            formatted_list = ", ".join(format_value(v, variables) for v in value)
+            return f"{indent_str}{key} = {{ {formatted_list} }};"
         else:
             variables[key] = value
-            return f"let {key} = {format_value(value, variables)};"
+            return f"{indent_str}{key} = {format_value(value, variables)};"
+
     result = []
+    indent_str = " " * indent
     for key, value in json_obj.items():
-        if isinstance(value, dict):
-            result.append(f"--[[ Nested configuration for {key} ]]--")
-            nested = json_to_custom_config(value, variables)
-            result.append(nested)
-        else:
-            result.append(process_key_value(key, value))
+        result.append(process_key_value(key, value, indent))
+
     return "\n".join(result)
+
 
 def parse_json_file(input_file):
     with open(input_file, 'r', encoding='utf-8') as f:
@@ -71,6 +77,10 @@ def write_output_file(output_file, content):
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(content)
 
+def wrap_in_braces(config_data):
+    return f"{{\n{config_data}\n}}"
+
+# Example usage in the script remains unchanged.
 def main():
     parser = argparse.ArgumentParser(description="Transform JSON into a custom configuration language.")
     parser.add_argument("-i", "--input", required=True, help="Path to the input JSON file.")
@@ -79,7 +89,8 @@ def main():
     try:
         json_data = parse_json_file(args.input)
         config_data = json_to_custom_config(json_data)
-        write_output_file(args.output, config_data)
+        wrapped_config_data = wrap_in_braces(config_data)
+        write_output_file(args.output, wrapped_config_data)
         print("Transformation successful. Output written to:", args.output)
     except Exception as e:
         print("Error:", e)

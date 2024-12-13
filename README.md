@@ -37,18 +37,19 @@ python cli_config_tool.py -i <путь_к_JSON_файлу> -o <путь_к_вы�
 ### Пример
 Входной JSON:
 ```json
-
-   "x": 5,
-   "y": 10,
-   "z": "^(+ x y)",
-   "w": "^(- 20 z)",
-   "message": "Result is calculated",
-   "nested": {
-      "a": 2,
-      "b": "^(+ a x)",
-      "c": "Nested computation"
-   },
-   "array": [1, 2, 3, 4, "^(+ x y)"]
+{
+    "x": 5,
+    "y": 10,
+    "z": "^(+ x y)",
+    "w": "^(- 20 z)",
+    "message": "Result is calculated",
+    "nested": {
+        "a": 2,
+        "b": "^(+ a x)",
+        "c": "Nested computation"
+    },
+    "array": [1, 2, 3, 4, "^(+ x y)"]
+}
 
 
 ```
@@ -60,16 +61,19 @@ python cli_config_tool.py -i input.json -o output.cfg
 
 Выходной файл `output.cfg`:
 ```
-let x = 5;
-let y = 10;
-let z = 15;
-let w = 35;
-let message = @"Result is calculated";
---[[ Nested configuration for nested ]]--
-let a = 2;
-let b = 7;
-let c = @"Nested computation";
-let array = { 1, 2, 3, 4, 15 };
+{
+x = 5;
+y = 10;
+z = 15;
+w = 5;
+message = @"Result is calculated";
+nested = {
+{    a = 2;
+    b = 7;
+    c = @"Nested computation";}
+};
+array = { 1, 2, 3, 4, 15 };
+}
 ```
 
 ## Тестирование

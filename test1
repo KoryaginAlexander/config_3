@@ -1,0 +1,10 @@
+let x = 5;
+let y = 10;
+let z = 15;
+let w = 5;
+let message = @"Result is calculated";
+--[[ Nested configuration for nested ]]--
+let a = 2;
+let b = 7;
+let c = @"Nested computation";
+let array = { 1, 2, 3, 4, 15 };
