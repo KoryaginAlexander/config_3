@@ -1,0 +1,6 @@
+--[[ Nested configuration for server ]]--
+let host = @"localhost";
+let port = 8080;
+--[[ Nested configuration for features ]]--
+let enabled = True;
+let list = { @"a", @"b", @"c" };

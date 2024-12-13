@@ -1,0 +1,10 @@
+{
+    "server": {
+        "host": "localhost",
+        "port": 8080
+    },
+    "features": {
+        "enabled": true,
+        "list": ["a", "b", "c"]
+    }
+}
